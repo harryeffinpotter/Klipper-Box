@@ -19,7 +19,7 @@ configdir="$pdatadir/config"
 if [ -d "$klipperdir" ]; then
     echo "Klipper found..."
 else
-    echo -e "Klipper not found, about to launch install script.\nFor easiest setup please install:\n\nREQUIRED-\nOption 1- Klipper\nOption 2- moonraker\n\nOptional-\nOption 8- OctoEverywhere\nThis allows you to access your printer and webcam from outside your home network and on many convenient mobile apps like Mobileraker!"
+    echo -e "Klipper not found, about to launch install script.\nOnce you are in the KIAUH script (you will be taken to it shortly automatifcally) you will come to a menu, press 1 then Enter to go to INSTALL then install the following (these numbers match the numbers on the actual menu)\n\nREQUIRED-\n#1- Klipper\n#2- moonraker\n#3- MainSail\n\nOptional-\n#8- OctoEverywhere\nThis allows you to access your printer and webcam from outside your home network and on many convenient mobile apps like Mobileraker!"
     read -p "Press enter when you're ready..."
     cd "/home/$uname" && su "$uname" -c "git clone https://github.com/th33xitus/kiauh.git"
     cd "/home/$uname" && su "$uname" -c "./kiauh/kiauh.sh"
