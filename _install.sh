@@ -19,7 +19,7 @@ configdir="$pdatadir/config"
 if [ -d "$klipperdir" ]; then
     echo "Klipper found..."
 else
-    echo -e "Klipper not found, about to launch install script.\nOnce you are in the KIAUH script (you will be taken to it shortly automatifcally) you will come to a menu, press 1 then Enter to go to INSTALL then install the following (these numbers match the numbers on the actual menu)\n\nREQUIRED-\n#1- Klipper\n#2- moonraker\n#3- MainSail\n\nOptional-\n#8- OctoEverywhere\nThis allows you to access your printer and webcam from outside your home network and on many convenient mobile apps like Mobileraker!"
+    echo -e "Klipper not found, about to launch install script.\nOnce you are in the KIAUH script (you will be taken to it shortly automatifcally) you will come to a menu, press 1 then Enter to go to INSTALL then install the following (these numbers match the numbers on the actual menu)\n\nREQUIRED-\n#1- Klipper\n#2- moonraker\n#3- MainSail\n\nOptional-\n#10- OctoEverywhere\nThis allows you to access your printer and webcam from outside your home network and on many convenient mobile apps like Mobileraker!"
     read -p "Press enter when you're ready..."
     cd "/home/$uname" && su "$uname" -c "git clone https://github.com/th33xitus/kiauh.git"
     cd "/home/$uname" && su "$uname" -c "./kiauh/kiauh.sh"
@@ -33,13 +33,13 @@ fi
 echo -n "Building up to date firmware..."
 make clean  1>/dev/null 2>/dev/null
 make 1>/dev/null 2>/dev/null
-mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/"
+mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/"1>/dev/null 2>/dev/null
 mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/STM32F4_UPDATE" 1>/dev/null 2>/dev/null
-cp "$klipperdir/out/klipper.bin" "/home/$uname/_KLIPPER_BOX_OUTPUT/STM32F4_UPDATE"
+cp "$klipperdir/out/klipper.bin" "/home/$uname/_KLIPPER_BOX_OUTPUT/STM32F4_UPDATE" 1>/dev/null 2>/dev/null
 echo "Completed!"
 echo -e "Editing Prusa Slicer ini bundle with the IP of the machine running this script.\nThis will allow you to upload STL files direct to the printer from Prusa Slicer!\n"
 MYIP="$(hostname -I)"
-count="$(echo "$MYIP" | wc -l 1>/dev/null 2>/dev/null)"
+count="$(echo "$MYIP" | wc -l)"
 if [ "$count" -gt 1 ]; then
     MYIP="$(hostname -I | cut -f2 -d' ')"
 fi
@@ -54,9 +54,9 @@ echo -e "1) Copy entire STM32F4_UPDATE directory (located at /home/$uname/_KLIPP
 read -p  "3) Then return here and press ENTER..."
 echo -e "\n"
 echo -e "Next- you need to flash this newly built firmware onto your printer so that we can automatically obtain your MCU serial."
-read -p -r "Please remove any usb connection that is NOT your printer itself from your pi/sonic pad/klipper-box(this is what I call a laptop or PC with ubuntu installed just for klipper running purposes) then press ENTER..."
+read -p "Please remove any usb connection that is NOT your printer itself from your pi/sonic pad/klipper-box(this is what I call a laptop or PC with ubuntu installed just for klipper running purposes) then press ENTER..."
 read -p "Are you using WSL?[y/n]?" WSLYN
-if echo "$WSLYN" | grey -i "y"; then 
+if echo "$WSLYN" | grep -i "y"; then 
     echo -e "Ok you must run the WSL_USB.bat from the main repo directory.\nThis will allow you to assign your USB to an ID in wsl!"
     read -p "Once you've done that and it is assigned return here and press enter!"
     MCU="/dev/ttyUSB0"
