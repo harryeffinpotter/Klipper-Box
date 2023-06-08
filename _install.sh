@@ -17,7 +17,9 @@ klipperdir="$udir/klipper"
 pdatadir="$udir/printer_data"
 configdir="$pdatadir/config"
 if [ -d "$klipperdir" ]; then
-    echo "Klipper found..."
+    echo "Klipper found... backing up current printer_data.config dir to $udir/printer_data_backup/config before overwriting..."
+    su "$uname" -c mkdir "$udir/printer_data_backup"  1>/dev/null 2>/dev/null
+    su "$uname" -c mkdir "$udir/printer_data_backup/config"  1>/dev/null 2>/dev/null
 else
     echo -e "Klipper not found, about to launch install script.\nOnce you are in the KIAUH script (you will be taken to it shortly automatifcally) you will come to a menu, press 1 then Enter to go to INSTALL then install the following (these numbers match the numbers on the actual menu)\n\nREQUIRED-\n#1- Klipper\n#2- moonraker\n#3- MainSail\n\nOptional-\n#10- OctoEverywhere\nThis allows you to access your printer and webcam from outside your home network and on many convenient mobile apps like Mobileraker!"
     read -p "Press enter when you're ready..."
@@ -33,8 +35,9 @@ fi
 echo -n "Building up to date firmware..."
 make clean  1>/dev/null 2>/dev/null
 make 1>/dev/null 2>/dev/null
-mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/"1>/dev/null 2>/dev/null
+mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/" 1>/dev/null 2>/dev/null
 mkdir "/home/$uname/_KLIPPER_BOX_OUTPUT/STM32F4_UPDATE" 1>/dev/null 2>/dev/null
+chown -R  ${uname}:${uname} /home/${uname}/
 cp "$klipperdir/out/klipper.bin" "/home/$uname/_KLIPPER_BOX_OUTPUT/STM32F4_UPDATE" 1>/dev/null 2>/dev/null
 echo "Completed!"
 echo -e "Editing Prusa Slicer ini bundle with the IP of the machine running this script.\nThis will allow you to upload STL files direct to the printer from Prusa Slicer!\n"
@@ -45,6 +48,7 @@ if [ "$count" -gt 1 ]; then
 fi
 if sed -i "s/YOURIPADDRESS/$MYIP/g" "$modeldirectory/bundle.ini"; then
     echo "Success!"
+
     cp -a "$modeldirectory/bundle.ini" "/home/$uname/_KLIPPER_BOX_OUTPUT/"
 else
     echo "Could not update bundle.ini."
@@ -55,6 +59,7 @@ read -p  "3) Then return here and press ENTER..."
 echo -e "\n"
 echo -e "Next- you need to flash this newly built firmware onto your printer so that we can automatically obtain your MCU serial."
 read -p "Please remove any usb connection that is NOT your printer itself from your pi/sonic pad/klipper-box(this is what I call a laptop or PC with ubuntu installed just for klipper running purposes) then press ENTER..."
+echo -e "\n\n"
 read -p "Are you using WSL?[y/n]?" WSLYN
 if echo "$WSLYN" | grep -i "y"; then 
     echo -e "Ok you must run the WSL_USB.bat from the main repo directory.\nThis will allow you to assign your USB to an ID in wsl!"
@@ -63,12 +68,15 @@ if echo "$WSLYN" | grep -i "y"; then
 else
     MCU="$(ls /dev/serial/by-id/*)"
 fi
+clear
 if [ -z "$MCU" ]; then
 	echo "No printer found via USB, did you make sure to flash your firmware?"
 	exit
 else
-	echo "Serial found!! Serial:$MCU"
-fi
-if sed -i "s/serial:.*/serial:${MCU//\//\\/}/g" "$configdir/printer.cfg"; then echo "success!"; fi
-if sed -i "s/serial:.*/serial:${MCU//\//\\/}/g" "/home/$uname/printer_data/config/printer.cfg"; then echo "success!"; fi
-echo -e "Thats all folks!\nIn your /home/$uname/_KLIPPER_BOX_OUTPUT directory you will find a file named bundle.ini\nLocate your prusa slicer application exe and copy the bundle.ini to and open a command prompt in that folder.\nThen type-\nprusa-slicer.exe --load bundle.ini\nThat should load Prusa Slicer with all of the suggested settings!\nThat's including super speed printing, which you can adjust on your own terms!\nIf for any reason Prusa Slicer acts up, you can load the _BASE_PROJECT.3mf fileincluded in the folder for your model on the repo!"
+	echo -e "\nSerial found!! Serial:$MCU\n"
+fi 
+
+if sed -i "s!serial:.*!serial:${MCU}!g" "$configdir/printer.cfg"; then 
+	echo -e  "\nSuccessfully injected your MCU into your printer.cfg (in $configdir folder)!";
+fi 
+echo -e "\n\nThats all folks!\nIn your /home/$uname/_KLIPPER_BOX_OUTPUT directory you will find a file named bundle.ini\nLocate your prusa slicer application exe and copy the bundle.ini to and open a command prompt in that folder.\nThen type-\nprusa-slicer.exe --load bundle.ini\nThat should load Prusa Slicer with all of the suggested settings!\nThat's including super speed printing, which you can adjust on your own terms!\nIf for any reason Prusa Slicer acts up, you  can load the _BASE_PROJECT.3mf fileincluded in the folder for your model on the repo!"
